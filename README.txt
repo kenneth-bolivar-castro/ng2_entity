@@ -59,7 +59,7 @@ MAINTAINERS
 
 Author:
  * Kenneth Bolívar (keboca) - https://www.drupal.org/u/keboca
-    <keboca at yourdrupaldev DOT com>
+    <me@keboca.com>
 
 This project has been sponsored by:
  * Spark451 Inc.
