@@ -1,0 +1,13 @@
+name: Article Component
+machine_name: article-component
+type: pdb
+entity_display: view_mode
+description: 'NG2 Article Component'
+package: NG2
+module_status: active
+presentation: ng2
+core: '8.x'
+properties:
+  - heading: title
+  - value: body
+  - photo: field_image:file:url

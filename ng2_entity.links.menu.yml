@@ -1,0 +1,5 @@
+ng2_entity.entity_view_display_config_form:
+  title: 'Angular 2 Component View Mode Config'
+  route_name: ng2_entity.entity_view_display_config_form
+  description: 'Define entity types to enable Angular 2 Component view mode'
+  parent: system.admin_config_services

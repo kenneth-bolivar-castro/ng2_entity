@@ -1,0 +1,8 @@
+name: Angular 2 Entity
+type: module
+description: Provides view mode to display entity as Angular 2 component.
+core: 8.x
+configure: ng2_entity.entity_view_display_config_form
+package: NG2
+dependencies:
+  - pdb_ng2

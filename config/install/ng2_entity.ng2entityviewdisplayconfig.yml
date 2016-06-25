@@ -1,0 +1,8 @@
+entity_types:
+  node: node
+  block_content: 0
+  comment: 0
+  contact_message: 0
+  profile: 0
+  taxonomy_term: 0
+  user: 0

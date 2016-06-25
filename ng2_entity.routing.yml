@@ -1,0 +1,11 @@
+
+ng2_entity.entity_view_display_config_form:
+  path: '/admin/config/ng2_entity/ng2entityviewdisplayconfig'
+  defaults:
+    _form: '\Drupal\ng2_entity\Form\Ng2EntityViewDisplayConfigForm'
+    _title: 'Entity View Mode Config Form'
+  requirements:
+    _permission: 'access administration pages'
+  options:
+    _admin_route: TRUE
+
