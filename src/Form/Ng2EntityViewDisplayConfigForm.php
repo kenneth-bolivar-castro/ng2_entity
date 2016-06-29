@@ -3,11 +3,11 @@
 namespace Drupal\ng2_entity\Form;
 
 use Drupal\Core\Entity\Entity\EntityViewMode;
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Entity\EntityTypeManager;
 
 /**
  * Class EntityViewDisplayConfigForm.
@@ -94,17 +94,9 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
       ->get('entity_types');
     // Compare values just selected and settings defined.
     if ($types && ($diff = array_diff($types, $form_state->getValue('entity_types')))) {
-      // Get thought all entity types disabled.
-      foreach ($diff as $entityType) {
-        // Since entity type was disabled, then remove angular2_component view mode.
-        if ($entity = EntityViewMode::load($entityType . '.angular2_component')) {
-          $entity->delete();
-          drupal_set_message($this->t('Removed %label view mode within @entity-type.', [
-            '%label' => $entity->label(),
-            '@entity-type' => $entityType
-          ]), 'warning');
-        }
-      }
+      // Invoke removeEntityViewModes() method from "ng2_entity.ng2_view_display" service.
+      \Drupal::service('ng2_entity.ng2_view_display')
+        ->removeEntityViewModes($diff, TRUE);
     }
   }
 
@@ -113,27 +105,11 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
-    // Define view mode label.
-    $label = $this->t('Angular 2 Component');
-    // Walk though entity types selected.
-    foreach (array_filter($form_state->getValue('entity_types')) as $entityType) {
-      // Define entity view mode id.
-      $id = $entityType . '.angular2_component';
-      // If it already exists, then avoid to create it.
-      if (EntityViewMode::load($id)) {
-        continue;
-      }
-      // Create new angular2_component entity view mode.
-      EntityViewMode::create([
-        'id' => $id,
-        'label' => $label,
-        'targetEntityType' => $entityType,
-      ])->save();
-      drupal_set_message($this->t('Saved %label view mode within @entity-type.', [
-        '%label' => $label,
-        '@entity-type' => $entityType
-      ]));
-    }
+    // Retrieve entity types selected.
+    $types = array_filter($form_state->getValue('entity_types'));
+    // Invoke createEntityViewModes() method from "ng2_entity.ng2_view_display" service.
+    \Drupal::service('ng2_entity.ng2_view_display')
+      ->createEntityViewModes($types, TRUE);
     // Save entity types into configuration.
     $this->config('ng2_entity.ng2entityviewdisplayconfig')
       ->set('entity_types', $form_state->getValue('entity_types'))

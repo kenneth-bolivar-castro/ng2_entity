@@ -1,0 +1,23 @@
+<?php
+
+/**
+ * @file
+ * Install and uninstall functions for the ng2_entity module.
+ */
+
+
+/**
+ * Implements hook_install().
+ */
+function ng2_entity_install() {
+  // Invoke hookInstall() method from "ng2_entity.ng2_view_display" service.
+  \Drupal::service('ng2_entity.ng2_view_display')->hookInstall();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ng2_entity_uninstall() {
+  // Invoke hookUninstall() method from "ng2_entity.ng2_view_display" service.
+  \Drupal::service('ng2_entity.ng2_view_display')->hookUninstall();
+}

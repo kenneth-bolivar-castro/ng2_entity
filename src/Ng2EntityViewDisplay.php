@@ -2,14 +2,17 @@
 
 namespace Drupal\ng2_entity;
 
-use Drupal\Core\Url;
-use Drupal\pdb\ComponentDiscovery;
 use Drupal\Component\Uuid\UuidInterface;
-use Drupal\Core\Utility\Token;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\Entity\EntityViewMode;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Utility\Token;
+use Drupal\pdb\ComponentDiscovery;
 
 /**
  * Class EntityViewDisplay.
@@ -17,6 +20,8 @@ use Drupal\Core\Form\FormStateInterface;
  * @package Drupal\ng2_entity
  */
 class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
+
+  use StringTranslationTrait;
 
   /**
    * @const string
@@ -36,7 +41,12 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   /**
    * @var \Drupal\Core\Config\ImmutableConfig
    */
-  protected $config;
+  protected $pdbConfig;
+
+  /**
+   * @var \Drupal\Core\Config\ImmutableConfig
+   */
+  protected $ng2Config;
 
   /**
    * @var array
@@ -44,19 +54,24 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   protected $components = [];
 
   /**
-   * EntityViewDisplay constructor.
-   * @param \Drupal\pdb\ComponentDiscovery $pdb_component_discovery
+   * Ng2EntityViewDisplay constructor.
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $translation
+   * @param \Drupal\Core\Utility\Token $token
    * @param \Drupal\Component\Uuid\UuidInterface $uuid
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   * @param \Drupal\Core\Utility\Token $token
+   * @param \Drupal\pdb\ComponentDiscovery $pdb_component_discovery
    */
-  public function __construct(Token $token, UuidInterface $uuid, ConfigFactoryInterface $config_factory, ComponentDiscovery $pdb_component_discovery) {
+  public function __construct(TranslationInterface $translation, Token $token, UuidInterface $uuid, ConfigFactoryInterface $config_factory, ComponentDiscovery $pdb_component_discovery) {
+    // Setup translation service.
+    $this->stringTranslation = $translation;
     // Setup UUID service.
     $this->uuid = $uuid;
     // Setup Token service.
     $this->token = $token;
-    // Get PDB NG settings.
-    $this->config = $config_factory->get('pdb_ng2.settings');
+    // Get "pdb_ng2.settings" settings.
+    $this->pdbConfig = $config_factory->get('pdb_ng2.settings');
+    // Get "ng2_entity.ng2entityviewdisplayconfig" settings.
+    $this->ng2Config = $config_factory->get('ng2_entity.ng2entityviewdisplayconfig');
     // Retrieve all component info by component discovery service.
     $this->initComponents($pdb_component_discovery->getComponents());
   }
@@ -67,7 +82,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
    */
   protected function initComponents($components) {
     // Detine component attribute by reducing component array.
-    $this->components = array_reduce($components, function($components, $component) {
+    $this->components = array_reduce($components, function ($components, $component) {
       // Store component info array.
       $components[$component->info['machine_name']] = $component->info;
       return $components;
@@ -79,7 +94,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
    */
   public function getComponentByMachineName($machine_name) {
     // Check key component exists.
-    if(array_key_exists($machine_name, $this->components)) {
+    if (array_key_exists($machine_name, $this->components)) {
       return $this->components[$machine_name];
     }
     return NULL;
@@ -299,7 +314,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     // Define "ng2" component within "drupalSettings".
     $variables['#attached']['drupalSettings']['pdb']['ng2'] = [
       'module_path' => drupal_get_path('module', 'pdb_ng2'),
-      'development_mode' => $this->config->get('development_mode'),
+      'development_mode' => $this->pdbConfig->get('development_mode'),
       'global_injectables' => [],
       'components' => [
         "instance-id-{$uuid}" => [
@@ -309,5 +324,77 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
         ],
       ],
     ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createEntityViewModes(array $types, $show_message = FALSE) {
+    // Define view mode label.
+    $label = $this->t('Angular 2 Component');
+    // Walk though all given entity types.
+    array_map(function ($entityType) use ($label, $show_message) {
+      // Define entity view mode id.
+      $id = $entityType . '.' . self::VIEW_MODE;
+      // If it already exists, then avoid to create it.
+      if (EntityViewMode::load($id)) {
+        return;
+      }
+      // Create new angular2_component entity view mode.
+      EntityViewMode::create([
+        'id' => $id,
+        'label' => $label,
+        'targetEntityType' => $entityType,
+      ])->save();
+      // Check if message is required.
+      if ($show_message) {
+        // Display successful message.
+        drupal_set_message($this->t('Saved %label view mode within @entity-type.', [
+          '%label' => $label,
+          '@entity-type' => $entityType
+        ]));
+      }
+    }, $types);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function removeEntityViewModes(array $types, $show_message = FALSE) {
+    // Get through all given entity types.
+    array_map(function ($entityType) use ($show_message) {
+      // Remove angular2_component view mode from given entity type.
+      if ($entity = EntityViewMode::load($entityType . '.' . self::VIEW_MODE)) {
+        $entity->delete();
+        // Check if message is required.
+        if ($show_message) {
+          // Display warning message.
+          drupal_set_message($this->t('Removed %label view mode within @entity-type.', [
+            '%label' => $entity->label(),
+            '@entity-type' => $entityType
+          ]), 'warning');
+        }
+      }
+    }, $types);
+  }
+
+  /**
+   * Implements hook_install.
+   */
+  public function hookInstall() {
+    // Retrieve entity types selected.
+    $types = array_filter($this->ng2Config->get('entity_types'));
+    // Create entity view modes.
+    $this->createEntityViewModes($types);
+  }
+
+  /**
+   * Implements hook_uninstall.
+   */
+  public function hookUninstall() {
+    // Retrieve entity types selected.
+    $types = array_filter($this->ng2Config->get('entity_types'));
+    // Remove entity view modes.
+    $this->removeEntityViewModes($types);
   }
 }

@@ -1,4 +1,4 @@
 services:
   ng2_entity.ng2_view_display:
     class: Drupal\ng2_entity\Ng2EntityViewDisplay
-    arguments: ['@token', '@uuid', '@config.factory', '@pdb.component_discovery']
+    arguments: ['@string_translation', '@token', '@uuid', '@config.factory', '@pdb.component_discovery']
