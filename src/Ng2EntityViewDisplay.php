@@ -395,7 +395,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
         // Display successful message.
         drupal_set_message($this->t('Saved %label view mode within @entity-type.', [
           '%label' => $label,
-          '@entity-type' => $entity_type
+          '@entity-type' => $entity_type,
         ]));
       }
     }, $types);
@@ -415,7 +415,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
           // Display warning message.
           drupal_set_message($this->t('Removed %label view mode within @entity-type.', [
             '%label' => $entity->label(),
-            '@entity-type' => $entity_type
+            '@entity-type' => $entity_type,
           ]), 'warning');
         }
       }
@@ -441,4 +441,5 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     // Remove entity view modes.
     $this->removeEntityViewModes($types);
   }
+
 }
