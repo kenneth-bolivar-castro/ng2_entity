@@ -16,12 +16,14 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
 
   /**
+   * EntityTypeManager
    * @var \Drupal\Core\Entity\EntityTypeManager EntityTypeManager
    */
   protected $entityTypeManager;
 
   /**
    * EntityViewDisplayConfigForm constructor.
+   *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory ConfigFactoryInterface
    *
    * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager EntityTypeManager
@@ -110,7 +112,8 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
     parent::submitForm($form, $form_state);
     // Retrieve entity types selected.
     $types = array_filter($form_state->getValue('entity_types'));
-    // Invoke createEntityViewModes() method from "ng2_entity.ng2_view_display" service.
+    // Invoke createEntityViewModes() method from
+    // "ng2_entity.ng2_view_display" service.
     \Drupal::service('ng2_entity.ng2_view_display')
       ->createEntityViewModes($types, TRUE);
     // Save entity types into configuration.
