@@ -15,7 +15,7 @@ interface Ng2EntityViewDisplayInterface {
    * Retrieve component based on machine name.
    * @param $machine_name string Given machine name.
    * @return array
-   *   Component defintion.
+   *   Component definition.
    */
   public function getComponentByMachineName($machine_name);
 

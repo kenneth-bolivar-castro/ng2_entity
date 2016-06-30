@@ -70,6 +70,9 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
     });
     // Retrieve current configuration.
     $config = $this->config('ng2_entity.ng2entityviewdisplayconfig');
+    // Retrieve entity types settings.
+    $entityTypes = !empty($config->get('entity_types')) ?
+      $config->get('entity_types') : [];
     // Define new checkboxes input.
     $form['entity_types'] = [
       '#type' => 'checkboxes',
@@ -78,8 +81,7 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
       '#options' => array_map(function ($entityType) {
         return $entityType->getLabel();
       }, $contentEntityTypes),
-      '#default_value' => !empty($config->get('entity_types')) ?
-        $config->get('entity_types') : [],
+      '#default_value' => $entityTypes,
     ];
     return parent::buildForm($form, $form_state);
   }

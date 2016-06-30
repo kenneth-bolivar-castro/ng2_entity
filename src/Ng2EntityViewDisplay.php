@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file Contains Ng2EntityViewDisplay class.
+ */
+
 namespace Drupal\ng2_entity;
 
 use Drupal\Component\Uuid\UuidInterface;
