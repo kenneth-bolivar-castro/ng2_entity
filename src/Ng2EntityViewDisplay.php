@@ -4,6 +4,7 @@ namespace Drupal\ng2_entity;
 
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityViewMode;
 use Drupal\Core\Entity\EntityInterface;
@@ -245,19 +246,19 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   /**
    * Parse and retrieve field value from given entity.
    *
-   * @param $entity
+   * @param \Drupal\Core\Entity\ContentEntityBase $entity
    *   Entity.
-   * @param array $fieldName
-   *   fieldName.
+   * @param array $data
+   *   Metadata.
    *
    * @return null|string
    *   Field value.
    *
    * @internal
    */
-  protected function getFieldValue($entity, $fieldName) {
+  protected function getFieldValue(ContentEntityBase $entity, array $data) {
     // Explode given fieldName to metadata.
-    $metadata = explode(':', $fieldName);
+    $metadata = explode(':', $data);
     $field = array_shift($metadata);
     // After retrieve field check, then check if it exists and has any value.
     if ($entity->hasField($field) && !$entity->{$field}->isEmpty()) {
@@ -324,9 +325,9 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
       if (!empty($component[$key])) {
         // Define key values by reducing component definition.
         $metadata[$key] = array_reduce($component[$key], function ($carry, $pair) use ($entity) {
-          // Map values to carry based on fieldName metadata and given entity.
-          $carry += array_map(function ($field_name) use ($entity) {
-            return $this->getFieldValue($entity, $field_name);
+          // Map values to carry based on metadata and given entity.
+          $carry += array_map(function ($data) use ($entity) {
+            return $this->getFieldValue($entity, $data);
           }, $pair);
           // Return carry values.
           return $carry;

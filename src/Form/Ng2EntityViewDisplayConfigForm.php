@@ -66,25 +66,27 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     // Retrieve all entity types that support view modes.
-    $contentEntityTypes = array_filter($this->entityTypeManager->getDefinitions(), function ($entity_type) {
+    $content_entity_types = array_filter($this->entityTypeManager->getDefinitions(), function ($entity_type) {
       return ($entity_type->get('field_ui_base_route') && $entity_type->hasViewBuilderClass());
     });
     // Retrieve current configuration.
     $config = $this->config('ng2_entity.ng2entityviewdisplayconfig');
     // Retrieve entity types settings.
-    if (!$entityTypes = $config->get('entity_types')) {
+    if (!$entity_types = $config->get('entity_types')) {
       // If empty setup to new array.
-      $entityTypes = [];
+      $entity_types = [];
     }
+    // Get possible options.
+    $options = array_map(function ($entity_type) {
+      return $entity_type->getLabel();
+    }, $content_entity_types);
     // Define new checkboxes input.
     $form['entity_types'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Entity types'),
       '#description' => $this->t('Select entity types to enable Angular 2 component view mode.'),
-      '#options' => array_map(function ($entityType) {
-        return $entityType->getLabel();
-      }, $contentEntityTypes),
-      '#default_value' => $entityTypes,
+      '#options' => $options,
+      '#default_value' => $entity_types,
     ];
     return parent::buildForm($form, $form_state);
   }
@@ -99,7 +101,8 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
       ->get('entity_types');
     // Compare values just selected and settings defined.
     if ($types &&
-      ($diff = array_diff($types, $form_state->getValue('entity_types')))) {
+      ($diff = array_diff($types, $form_state->getValue('entity_types')))
+    ) {
       // Invoke removeEntityViewModes() method from
       // "ng2_entity.ng2_view_display" service.
       \Drupal::service('ng2_entity.ng2_view_display')
