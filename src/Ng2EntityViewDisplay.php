@@ -176,8 +176,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     // Append elements to given form.
     $form['components'] = $elements;
     // Add new callback function as first function to execute after submit this form.
-    $callback = sprintf('%s::%s', self::class, 'callbackFormEntityViewDisplayEditSubmitAlter');
-    array_unshift($form['actions']['submit']['#submit'], $callback);
+    array_unshift($form['actions']['submit']['#submit'], '\Drupal\ng2_entity\Ng2EntityViewDisplay::callbackFormEntityViewDisplayEditSubmitAlter');
   }
 
   /**

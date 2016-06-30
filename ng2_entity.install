@@ -5,7 +5,6 @@
  * Install and uninstall functions for the ng2_entity module.
  */
 
-
 /**
  * Implements hook_install().
  */
