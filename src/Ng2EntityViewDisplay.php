@@ -376,9 +376,9 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     // Define view mode label.
     $label = $this->t('Angular 2 Component');
     // Walk though all given entity types.
-    array_map(function ($entityType) use ($label, $show_message) {
+    array_map(function ($entity_type) use ($label, $show_message) {
       // Define entity view mode id.
-      $id = $entityType . '.' . self::VIEW_MODE;
+      $id = $entity_type . '.' . self::VIEW_MODE;
       // If it already exists, then avoid to create it.
       if (EntityViewMode::load($id)) {
         return;
@@ -387,14 +387,14 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
       EntityViewMode::create([
         'id' => $id,
         'label' => $label,
-        'targetEntityType' => $entityType,
+        'targetEntityType' => $entity_type,
       ])->save();
       // Check if message is required.
       if ($show_message) {
         // Display successful message.
         drupal_set_message($this->t('Saved %label view mode within @entity-type.', [
           '%label' => $label,
-          '@entity-type' => $entityType
+          '@entity-type' => $entity_type
         ]));
       }
     }, $types);
@@ -405,16 +405,16 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
    */
   public function removeEntityViewModes(array $types, $show_message = FALSE) {
     // Get through all given entity types.
-    array_map(function ($entityType) use ($show_message) {
+    array_map(function ($entity_type) use ($show_message) {
       // Remove angular2_component view mode from given entity type.
-      if ($entity = EntityViewMode::load($entityType . '.' . self::VIEW_MODE)) {
+      if ($entity = EntityViewMode::load($entity_type . '.' . self::VIEW_MODE)) {
         $entity->delete();
         // Check if message is required.
         if ($show_message) {
           // Display warning message.
           drupal_set_message($this->t('Removed %label view mode within @entity-type.', [
             '%label' => $entity->label(),
-            '@entity-type' => $entityType
+            '@entity-type' => $entity_type
           ]), 'warning');
         }
       }
@@ -422,7 +422,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   }
 
   /**
-   * Implements hook_install.
+   * Implementation of install hook.
    */
   public function hookInstall() {
     // Retrieve entity types selected.
@@ -432,7 +432,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   }
 
   /**
-   * Implements hook_uninstall.
+   * Implementation of uninstall hook.
    */
   public function hookUninstall() {
     // Retrieve entity types selected.
