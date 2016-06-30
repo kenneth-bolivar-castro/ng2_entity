@@ -1,9 +1,5 @@
 <?php
 
-/**
- * @file Contains Ng2EntityViewDisplay class.
- */
-
 namespace Drupal\ng2_entity;
 
 use Drupal\Component\Uuid\UuidInterface;
@@ -28,42 +24,60 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   use StringTranslationTrait;
 
   /**
+   * View mode name.
+   *
    * @const string
    */
   const VIEW_MODE = 'angular2_component';
 
   /**
+   * UuidInterface Service.
+   *
    * @var \Drupal\Component\Uuid\UuidInterface
    */
   protected $uuid;
 
   /**
+   * Token Service.
+   *
    * @var \Drupal\Core\Utility\Token
    */
   protected $token;
 
   /**
+   * ImmutableConfig.
+   *
    * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $pdbConfig;
 
   /**
+   * ImmutableConfig.
+   *
    * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $ng2Config;
 
   /**
+   * Components.
+   *
    * @var array
    */
   protected $components = [];
 
   /**
    * Ng2EntityViewDisplay constructor.
+   *
    * @param \Drupal\Core\StringTranslation\TranslationInterface $translation
+   *   translation Service.
    * @param \Drupal\Core\Utility\Token $token
+   *   Token Service.
    * @param \Drupal\Component\Uuid\UuidInterface $uuid
+   *   UUID Service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   config_factory Service.
    * @param \Drupal\pdb\ComponentDiscovery $pdb_component_discovery
+   *   ComponentDiscovery Service.
    */
   public function __construct(TranslationInterface $translation, Token $token, UuidInterface $uuid, ConfigFactoryInterface $config_factory, ComponentDiscovery $pdb_component_discovery) {
     // Setup translation service.
@@ -82,9 +96,11 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
 
   /**
    * Retrieve all componet info.
-   * @param $components array PDB Components.
+   *
+   * @param array $components
+   *   PDB Components.
    */
-  protected function initComponents($components) {
+  protected function initComponents(array $components) {
     // Detine component attribute by reducing component array.
     $this->components = array_reduce($components, function ($components, $component) {
       // Store component info array.
@@ -105,38 +121,46 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   }
 
   /**
-   * Implements hook_entity_view().
+   * Implementation of entity_view hook.
+   *
    * @param array $build
+   *   Build.
    * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   Entity.
    * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
-   * @param $view_mode
+   *   Display.
+   * @param string $view_mode
+   *   View_mode.
    */
   public function hookEntityView(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
     // Check given view mode parameter.
     if (self::VIEW_MODE == $view_mode) {
       // Retrieve components settings from Third party settings.
-      $machineName = $display->getThirdPartySetting('ng2_entity', 'components_settings');
+      $machine_name = $display->getThirdPartySetting('ng2_entity', 'components_settings');
       // Define angular2_component theme and its variables.
       $build['#theme'] = 'angular2_component';
       $build['#entity'] = $entity;
-      $build['#component'] = $this->getComponentByMachineName($machineName);
+      $build['#component'] = $this->getComponentByMachineName($machine_name);
     }
   }
 
   /**
-   * Implements hook_form_FORM_ID_alter().
-   * @param $form
+   * Implementation of form_FORM_ID_alter hook.
+   *
+   * @param array $form
+   *   Form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
-  public function hookFormEntityViewDisplayEditAlter(&$form, FormStateInterface $form_state) {
+  public function hookFormEntityViewDisplayEditAlter(array &$form, FormStateInterface $form_state) {
     // Retrieve build info form current form state.
-    $buildInfo = $form_state->getBuildInfo();
+    $build_info = $form_state->getBuildInfo();
     // Check instance type of callback object.
-    if (!array_key_exists('callback_object', $buildInfo)) {
+    if (!array_key_exists('callback_object', $build_info)) {
       return;
     }
     // Entity should be instance of EntityViewDisplay.
-    $entity = $buildInfo['callback_object']->getEntity();
+    $entity = $build_info['callback_object']->getEntity();
     if (!$entity instanceof EntityViewDisplayInterface) {
       return;
     }
@@ -154,18 +178,18 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     // Retrieve options from PDB discovery service.
     $options = array_reduce(\Drupal::service('pdb.component_discovery')
       ->getComponents(), function ($options, $component) {
-      // Presentation should be "ng2" and it should have "entity_display" key.
-      // "entity_display" should be "view_mode" type.
-      if ('ng2' == $component->info['presentation'] &&
-        array_key_exists('entity_display', $component->info) &&
-        'view_mode' == $component->info['entity_display']
-      ) {
-        // Add new option to carry variable.
-        $options[$component->info['machine_name']] = $component->info['name'];
-      }
-      // Return variable to carry across array_reduce().
-      return $options;
-    });
+        // Presentation should be "ng2" and it should have "entity_display" key.
+        // "entity_display" should be "view_mode" type.
+        if ('ng2' == $component->info['presentation'] &&
+          array_key_exists('entity_display', $component->info) &&
+          'view_mode' == $component->info['entity_display']
+        ) {
+          // Add new option to carry variable.
+          $options[$component->info['machine_name']] = $component->info['name'];
+        }
+        // Return variable to carry across array_reduce().
+        return $options;
+      });
     // Define radios input.
     $elements['settings'] = [
       '#type' => 'radios',
@@ -175,14 +199,18 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     ];
     // Append elements to given form.
     $form['components'] = $elements;
-    // Add new callback function as first function to execute after submit this form.
+    // Add new callback function as first function to
+    // execute after submit this form.
     array_unshift($form['actions']['submit']['#submit'], '\Drupal\ng2_entity\Ng2EntityViewDisplay::callbackFormEntityViewDisplayEditSubmitAlter');
   }
 
   /**
-   * Callback function to handle submission of forms altered by "hookFormEntityViewDisplayEditAlter" implementation.
+   * Callback to "hookFormEntityViewDisplayEditAlter" implementation.
+   *
    * @param array $form
+   *   Form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   Form state.
    */
   public static function callbackFormEntityViewDisplayEditSubmitAlter(array &$form, FormStateInterface $form_state) {
     // Retrieve current entity.
@@ -200,11 +228,15 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   }
 
   /**
-   * Return full URL based on given URI
-   * @internal
-   * @param $uri string Given URI to check.
+   * Return full URL based on given URI.
+   *
+   * @param string $uri
+   *   Given URI to check.
+   *
    * @return \Drupal\Core\GeneratedUrl|string
    *   Full URL based on given value.
+   *
+   * @internal
    */
   protected function fromUri($uri) {
     return Url::fromUri($uri)->toString();
@@ -212,10 +244,16 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
 
   /**
    * Parse and retrieve field value from given entity.
-   * @internal
+   *
    * @param $entity
-   * @param $fieldName
+   *   Entity.
+   * @param array $fieldName
+   *   fieldName.
+   *
    * @return null|string
+   *   Field value.
+   *
+   * @internal
    */
   protected function getFieldValue($entity, $fieldName) {
     // Explode given fieldName to metadata.
@@ -225,7 +263,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     if ($entity->hasField($field) && !$entity->{$field}->isEmpty()) {
       // Check for metadata and entity object inside current field.
       if (!empty($metadata) && !empty($entity->{$field}->entity)) {
-        // Build token from metadata values and call "replace()" from token service.
+        // Build token from metadata to call "replace()" from token service.
         return $this->token->replace('[' . implode(':', $metadata) . ']', [$entity->{$field}->entity->getEntityTypeId() => $entity->{$field}->entity]);
       }
       // Check for metadata.
@@ -260,10 +298,12 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   }
 
   /**
-   * Implements hook_preprocess_HOOK() for angular2-component.html.twig.
-   * @param $variables
+   * Implementation of preprocess_HOOK hook for angular2-component.html.twig.
+   *
+   * @param array $variables
+   *   Variables.
    */
-  public function hookPreprocessAngular2Component(&$variables) {
+  public function hookPreprocessAngular2Component(array &$variables) {
     // Check entity and component variables.
     if (empty($variables['entity']) || empty($variables['component'])) {
       return;
@@ -285,8 +325,8 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
         // Define key values by reducing component definition.
         $metadata[$key] = array_reduce($component[$key], function ($carry, $pair) use ($entity) {
           // Map values to carry based on fieldName metadata and given entity.
-          $carry += array_map(function ($fieldName) use ($entity) {
-            return $this->getFieldValue($entity, $fieldName);
+          $carry += array_map(function ($field_name) use ($entity) {
+            return $this->getFieldValue($entity, $field_name);
           }, $pair);
           // Return carry values.
           return $carry;
@@ -297,7 +337,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
           $attributes = $metadata['attributes'];
           // Prepare attributes values to be used.
           $metadata[$key] = array_reduce(array_keys($attributes), function ($carry, $key) use ($attributes) {
-            // Setup proper format to be included into angular2 c.omponent.
+            // Setup proper format to be included into angular2 component.
             $carry[] = sprintf('%s="%s"', $key, $attributes[$key]);
             return $carry;
           }, []);
@@ -307,8 +347,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     // Create new UUID value.
     $uuid = $this->uuid->generate();
     // Check attributes metadata to implode array into string.
-    $attributes = !empty($metadata['attributes']) ?
-      ' ' . implode(' ', $metadata['attributes']) : '';
+    $attributes = !empty($metadata['attributes']) ? ' ' . implode(' ', $metadata['attributes']) : '';
     // Build angular2 tag.
     $markup .= "<{$component['machine_name']} id='instance-id-{$uuid}'{$attributes}></{$component['machine_name']}>";
     // Expose as ng2_tag to be available within template.
