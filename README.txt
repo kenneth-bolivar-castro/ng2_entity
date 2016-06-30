@@ -49,7 +49,8 @@ CONFIGURATION
 
  * Enable custom display mode by "Custom Display Settings" and save new settings
 
- * Go "Angular 2 Component" view mode and define component setting to proper Angular 2 component
+ * Go "Angular 2 Component" view mode and define component setting
+ to proper Angular 2 component
 
  * Then you can expose your entity as Angular 2 Component
 

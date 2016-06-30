@@ -1,9 +1,7 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: kenneth
- * Date: 24/06/16
- * Time: 02:39 PM
+ * @file Contains Ng2EntityViewDisplayInterface interface.
  */
 
 namespace Drupal\ng2_entity;
