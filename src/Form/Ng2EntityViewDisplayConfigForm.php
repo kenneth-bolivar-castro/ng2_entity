@@ -71,8 +71,10 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
     // Retrieve current configuration.
     $config = $this->config('ng2_entity.ng2entityviewdisplayconfig');
     // Retrieve entity types settings.
-    $entityTypes = !empty($config->get('entity_types')) ?
-      $config->get('entity_types') : [];
+    if(!$entityTypes = $config->get('entity_types')) {
+      // If empty setup to new array.
+      $entityTypes = [];
+    }
     // Define new checkboxes input.
     $form['entity_types'] = [
       '#type' => 'checkboxes',
