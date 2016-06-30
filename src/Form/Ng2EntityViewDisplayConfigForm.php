@@ -26,10 +26,9 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
    * EntityViewDisplayConfigForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   * ConfigFactoryInterface.
-   *
+   *   ConfigFactoryInterface.
    * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
-   * EntityTypeManager.
+   *   EntityTypeManager.
    */
   public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManager $entity_type_manager) {
     parent::__construct($config_factory);
