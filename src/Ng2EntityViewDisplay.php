@@ -248,7 +248,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
    *
    * @param \Drupal\Core\Entity\ContentEntityBase $entity
    *   Entity.
-   * @param array $data
+   * @param string $data
    *   Metadata.
    *
    * @return null|string
@@ -256,7 +256,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
    *
    * @internal
    */
-  protected function getFieldValue(ContentEntityBase $entity, array $data) {
+  protected function getFieldValue(ContentEntityBase $entity, $data) {
     // Explode given fieldName to metadata.
     $metadata = explode(':', $data);
     $field = array_shift($metadata);
