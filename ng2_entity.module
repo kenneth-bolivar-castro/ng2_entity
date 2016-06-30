@@ -36,7 +36,8 @@ function ng2_entity_entity_view(array &$build, EntityInterface $entity, EntityVi
  * Implements hook_form_FORM_ID_alter().
  */
 function ng2_entity_form_entity_view_display_edit_form_alter(&$form, FormStateInterface $form_state) {
-  // Invoke hookFormEntityViewDisplayEditAlter() method from "ng2_entity.ng2_view_display" service.
+  // Invoke hookFormEntityViewDisplayEditAlter() method from
+  // "ng2_entity.ng2_view_display" service.
   \Drupal::service('ng2_entity.ng2_view_display')
     ->hookFormEntityViewDisplayEditAlter($form, $form_state);
 }
@@ -45,7 +46,8 @@ function ng2_entity_form_entity_view_display_edit_form_alter(&$form, FormStateIn
  * Implements hook_preprocess_HOOK().
  */
 function ng2_entity_preprocess_angular2_component(&$variables) {
-  // Invoke hookPreprocessAngular2Component() method from "ng2_entity.ng2_view_display" service.
+  // Invoke hookPreprocessAngular2Component() method from
+  // "ng2_entity.ng2_view_display" service.
   \Drupal::service('ng2_entity.ng2_view_display')
     ->hookPreprocessAngular2Component($variables);
 }

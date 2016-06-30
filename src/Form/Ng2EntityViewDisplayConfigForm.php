@@ -2,7 +2,6 @@
 
 namespace Drupal\ng2_entity\Form;
 
-use Drupal\Core\Entity\Entity\EntityViewMode;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -17,19 +16,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
 
   /**
-   * @var \Drupal\Core\Entity\EntityTypeManager
+   * @var \Drupal\Core\Entity\EntityTypeManager EntityTypeManager
    */
   protected $entityTypeManager;
 
   /**
    * EntityViewDisplayConfigForm constructor.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory ConfigFactoryInterface
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager EntityTypeManager
    */
-  public function __construct(
-    ConfigFactoryInterface $config_factory,
-    EntityTypeManager $entity_type_manager
-  ) {
+  public function __construct(ConfigFactoryInterface $config_factory, EntityTypeManager $entity_type_manager) {
     parent::__construct($config_factory);
     $this->entityTypeManager = $entity_type_manager;
   }
@@ -71,7 +68,7 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
     // Retrieve current configuration.
     $config = $this->config('ng2_entity.ng2entityviewdisplayconfig');
     // Retrieve entity types settings.
-    if(!$entityTypes = $config->get('entity_types')) {
+    if (!$entityTypes = $config->get('entity_types')) {
       // If empty setup to new array.
       $entityTypes = [];
     }
@@ -97,8 +94,10 @@ class Ng2EntityViewDisplayConfigForm extends ConfigFormBase {
     $types = $this->config('ng2_entity.ng2entityviewdisplayconfig')
       ->get('entity_types');
     // Compare values just selected and settings defined.
-    if ($types && ($diff = array_diff($types, $form_state->getValue('entity_types')))) {
-      // Invoke removeEntityViewModes() method from "ng2_entity.ng2_view_display" service.
+    if ($types &&
+      ($diff = array_diff($types, $form_state->getValue('entity_types')))) {
+      // Invoke removeEntityViewModes() method from
+      // "ng2_entity.ng2_view_display" service.
       \Drupal::service('ng2_entity.ng2_view_display')
         ->removeEntityViewModes($diff, TRUE);
     }

@@ -8,4 +8,3 @@ ng2_entity.entity_view_display_config_form:
     _permission: 'access administration pages'
   options:
     _admin_route: TRUE
-

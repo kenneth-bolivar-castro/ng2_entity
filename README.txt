@@ -17,7 +17,7 @@ Welcome to Angular 2 Entity. This module provides the ability
 to expose Drupal entities as Angular 2 components through
 Entity Display Modes and Progressive Decouple Blocks (PDB) contributed module.
 
-Since PDB allows to declare Angular 2 components by write it down info.yml files,
+Since PDB allows to declare Angular 2 components by write it down info.yml files
 this module take advances of that by new keys:
 
 * entity_display
@@ -45,13 +45,13 @@ INSTALLATION
 CONFIGURATION
 -------------
 
- * Navigate to Manage Display of an entity you want to enable new view mode.
+ * Navigate to Manage Display of an entity you want to enable new view mode
 
- * Enable custom display mode by "Custom Display Settings" and save new settings.
+ * Enable custom display mode by "Custom Display Settings" and save new settings
 
- * Go to "Angular 2 Component" view mode and define component setting to proper Angular 2 component.
+ * Go "Angular 2 Component" view mode and define component setting to proper Angular 2 component
 
- * Then you can expose your entity as Angular 2 Component.
+ * Then you can expose your entity as Angular 2 Component
 
 
 MAINTAINERS
