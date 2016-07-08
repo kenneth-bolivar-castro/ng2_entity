@@ -7,6 +7,7 @@ import { Component, ElementRef } from '@angular/core';
         .article-wrapper {
            border: 2px dashed silver;
            text-align: center;
+           margin-bottom: 20px;
         }
         .article-content {
             font-size: x-large;
