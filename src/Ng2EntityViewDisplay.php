@@ -244,51 +244,107 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
   }
 
   /**
-   * Parse and retrieve field value from given entity.
+   * Retrieve value from token if it exists.
    *
-   * @param \Drupal\Core\Entity\ContentEntityBase $entity
-   *   Entity.
-   * @param string $data
-   *   Metadata.
+   * @param ContentEntityBase $entity
+   *   Given entity to parse.
+   * @param string $field
+   *   Given field name to parse.
+   * @param array $metadata
+   *   Given metadata to parse.
    *
    * @return null|string
-   *   Field value.
-   *
-   * @internal
+   *   Value from token execution otherwise NULL.
    */
-  protected function getFieldValue(ContentEntityBase $entity, $data) {
+  protected function parseAsToken(ContentEntityBase $entity, $field, array $metadata) {
+    // Check if metadata is empty.
+    if (!empty($metadata)) {
+      // Load entity type id.
+      $entity_type_id = $entity->getEntityTypeId();
+      $entity_related = $entity;
+      if (!empty($entity->{$field}->entity)) {
+        $entity_type_id = $entity->{$field}->entity->getEntityTypeId();
+        $entity_related = $entity->{$field}->entity;
+      }
+      // Build token and call "replace()" from token service.
+      $text = '[' . implode(':', $metadata) . ']';
+      if (($value = $this->token->replace($text, [$entity_type_id => $entity_related])) && $value != $text) {
+        return $value;
+      }
+    }
+    return NULL;
+  }
+
+  /**
+   * Retrieve first value from field name into entity.
+   *
+   * @param ContentEntityBase $entity
+   *   Given entity to parse.
+   * @param string $field
+   *   Given field name to parse.
+   * @param array $metadata
+   *   Metadata based on what need to be process.
+   *
+   * @return bool|mixed
+   *   First value found from field entity otherwise FALSE.
+   */
+  protected function parseAsFirstValueOrCallback(ContentEntityBase $entity, $field, array $metadata) {
+    // Check if metadata is empty.
+    if (empty($metadata)) {
+      return NULL;
+    }
+    // Init value.
+    $value = FALSE;
+    // Retrieve first value as key.
+    $key = array_shift($metadata);
+    // Retrieve first item and its value.
+    $values = $entity->{$field}->first()->getValue();
+    // Check if key exists into values retrieved.
+    if (array_key_exists($key, $values)) {
+      // Define value from values and key.
+      $value = $values[$key];
+    }
+    // Get callback definition from metadata.
+    $callback = reset($metadata);
+    if (!empty($callback)) {
+      // Check if it is an external function to execute otherwise
+      // call an internal method if it exists.
+      if (function_exists($callback)) {
+        // Send as parameters the current value retrieved and entity.
+        $value = $callback($value, $entity, $field);
+      }
+      elseif (method_exists($this, $callback)) {
+        $value = $this->{$callback}($value);
+      }
+    }
+    // TODO: Expose hook_alter.
+    // Returns parsed value.
+    return $value;
+  }
+
+  /**
+   * Parse and retrieve field value from given entity.
+   *
+   * @param ContentEntityBase $entity
+   *   Given entity to parse.
+   * @param string $field_name
+   *   Field name with all metadata as string.
+   *
+   * @return null|string
+   *   Value parsed from field metadata.
+   */
+  protected function getFieldValue(ContentEntityBase $entity, $field_name) {
     // Explode given fieldName to metadata.
-    $metadata = explode(':', $data);
+    $metadata = explode(':', $field_name);
     $field = array_shift($metadata);
     // After retrieve field check, then check if it exists and has any value.
     if ($entity->hasField($field) && !$entity->{$field}->isEmpty()) {
-      // Check for metadata and entity object inside current field.
-      if (!empty($metadata) && !empty($entity->{$field}->entity)) {
-        // Build token from metadata to call "replace()" from token service.
-        return $this->token->replace('[' . implode(':', $metadata) . ']', [$entity->{$field}->entity->getEntityTypeId() => $entity->{$field}->entity]);
+      // Parse metadata as token and check proper entity to link it.
+      if ($value = $this->parseAsToken($entity, $field, $metadata)) {
+        return $value;
       }
-      // Check for metadata.
-      elseif (!empty($metadata)) {
-        // Init value.
-        $value = NULL;
-        // Retrieve first value as key.
-        $key = array_shift($metadata);
-        // Retrieve first item and its value.
-        $values = $entity->{$field}->first()->getValue();
-        // Check if key exists into values retrieved.
-        if (array_key_exists($key, $values)) {
-          // Define value from values and key.
-          $value = $values[$key];
-        }
-        // Get callback definition from metadata.
-        $callback = reset($metadata);
-        if (!empty($callback)) {
-          // Execute as internal function of current instance.
-          // TODO: Allow external functions also check before execute it.
-          $value = call_user_func([$this, $callback], $value);
-        }
-        // TODO: Expose hook_alter.
-        // Returns parsed value.
+      // Parse metadata as callback.
+      if (($value = $this->parseAsFirstValueOrCallback($entity, $field, $metadata)) && $value !== NULL) {
         return $value;
       }
       // If metadata doesn't exist return raw value.
@@ -339,7 +395,7 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
           // Prepare attributes values to be used.
           $metadata[$key] = array_reduce(array_keys($attributes), function ($carry, $key) use ($attributes) {
             // Setup proper format to be included into angular2 component.
-            $carry[] = sprintf('%s="%s"', $key, $attributes[$key]);
+            $carry[] = sprintf('%s="%s"', $key, htmlentities($attributes[$key]));
             return $carry;
           }, []);
         }
