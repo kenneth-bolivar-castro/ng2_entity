@@ -179,18 +179,18 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
     // Retrieve options from PDB discovery service.
     $options = array_reduce(\Drupal::service('pdb.component_discovery')
       ->getComponents(), function ($options, $component) {
-        // Presentation should be "ng2" and it should have "entity_display" key.
-        // "entity_display" should be "view_mode" type.
-        if ('ng2' == $component->info['presentation'] &&
-          array_key_exists('entity_display', $component->info) &&
-          'view_mode' == $component->info['entity_display']
-        ) {
-          // Add new option to carry variable.
-          $options[$component->info['machine_name']] = $component->info['name'];
-        }
-        // Return variable to carry across array_reduce().
-        return $options;
-      });
+      // Presentation should be "ng2" and it should have "entity_display" key.
+      // "entity_display" should be "view_mode" type.
+      if ('ng2' == $component->info['presentation'] &&
+        array_key_exists('entity_display', $component->info) &&
+        'view_mode' == $component->info['entity_display']
+      ) {
+        // Add new option to carry variable.
+        $options[$component->info['machine_name']] = $component->info['name'];
+      }
+      // Return variable to carry across array_reduce().
+      return $options;
+    });
     // Define radios input.
     $elements['settings'] = [
       '#type' => 'radios',
@@ -381,10 +381,17 @@ class Ng2EntityViewDisplay implements Ng2EntityViewDisplayInterface {
       if (!empty($component[$key])) {
         // Define key values by reducing component definition.
         $metadata[$key] = array_reduce($component[$key], function ($carry, $pair) use ($entity) {
-          // Map values to carry based on metadata and given entity.
-          $carry += array_map(function ($data) use ($entity) {
+          // Map values based on metadata and given entity.
+          $mapped = array_map(function ($data) use ($entity) {
             return $this->getFieldValue($entity, $data);
           }, $pair);
+          // Merge mapped values with carry array.
+          foreach ($mapped as $ky => $value) {
+            // Define value only if it is empty.
+            if (empty($carry[$ky])) {
+              $carry[$ky] = $value;
+            }
+          }
           // Return carry values.
           return $carry;
         }, []);
